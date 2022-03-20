@@ -43,8 +43,9 @@
             data = ''
               set -eEuo pipefail
 
-              {| with service "cicero" |}
+              {| range service "cicero" |}
               exec plutus-certification --port $NOMAD_PORT_http --bind $NOMAD_IP_http --cicero-url {| .Address |}:{| .Port |}
+              {| break |}
               {| end |}
               '';
               # Workaround bug in std.script looking for template vars in the script body
@@ -69,10 +70,8 @@
     }
 
     (std.script "bash" ''
-      set -x
       export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
       echo ${lib.escapeShellArg (builtins.toJSON spec)} > job.json
-      cat job.json
       nomad run job.json
     '')
   ];
