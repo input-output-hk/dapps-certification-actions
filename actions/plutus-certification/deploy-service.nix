@@ -1,4 +1,4 @@
-{ name, std, actionLib, nixpkgsFlake, lib, ... }@args: {
+{ name, std, nixpkgsFlake, lib, ... }@args: {
   inputs.start = ''
     "dapps-certification/ci": start: {
       clone_url: string
@@ -55,9 +55,11 @@
       };
     };
   in std.chain args [
+    (std.escapeNames [] [])
+
     ({ name, ... }: prev: prev // { ${name} = prev.${name} // { namespace = "marlowe"; }; })
 
-    actionLib.simpleJob
+    std.singleTask
 
     {
       config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" ];

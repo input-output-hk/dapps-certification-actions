@@ -10,7 +10,6 @@
   in {
     ciceroActions = cicero.lib.callActionsWithExtraArgs rec {
       inherit std lib;
-      actionLib = import (cicero + "/action-lib.nix") { inherit std lib; };
       getDataFile = fn: ./data + "/${fn}";
       nixpkgsFlake = "github:NixOS/nixpkgs/${nixpkgs.rev}"; # TODO Get the full URL from Nix somehow
     } ./actions;
