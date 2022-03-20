@@ -33,6 +33,7 @@
 
           config = {
             packages = [
+              "${nixpkgsFlake}#bash"
               "git+${cfg.clone_url}?ref=${cfg.ref}&rev=${cfg.sha}#plutus-certification:exe:plutus-certification"
             ];
 
