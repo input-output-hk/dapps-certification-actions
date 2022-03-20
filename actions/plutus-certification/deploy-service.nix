@@ -61,11 +61,15 @@
 
     {
       resources.memory = 1024;
-      config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" ];
+      config.packages = std.data-merge.append [
+        "${nixpkgsFlake}#nomad"
+        "${nixpkgsFlake}#cacert"
+      ];
     }
 
     (std.script "bash" ''
       set -x
+      export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
       echo ${lib.escapeShellArg (builtins.toJSON spec)} > job.json
       cat job.json
       nomad run job.json
