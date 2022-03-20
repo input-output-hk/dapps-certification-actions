@@ -1,4 +1,4 @@
-{ std, actionLib, nixpkgsFlake, lib, ... }@args: {
+{ name, std, actionLib, nixpkgsFlake, lib, ... }@args: {
   inputs.start = ''
     "dapps-certification/ci": start: {
       clone_url: string
@@ -55,6 +55,8 @@
       };
     };
   in std.chain args [
+    { ${name}.namespace = "marlowe"; }
+
     actionLib.simpleJob
 
     {
