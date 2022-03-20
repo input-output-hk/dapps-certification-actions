@@ -57,17 +57,21 @@
   in std.chain args [
     (std.escapeNames [] [])
 
-    ({ name, ... }: prev: prev // { ${name} = prev.${name} // { namespace = "marlowe"; }; })
-
     std.singleTask
 
     {
       config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" ];
     }
 
+    std.postFact
+
     (std.script "bash" ''
+      echo ${lib.escapeShellArg (builtins.toJSON { ${name}.failed = true; })} > /local/cicero/post-fact/failure/fact
+      (
       echo ${lib.escapeShellArg (builtins.toJSON spec)} > job.json
+      cat job.json
       nomad run job.json
+      ) 2>&1 | tee /local/cicero/post-fact/failure/artifact
     '')
   ];
 }
