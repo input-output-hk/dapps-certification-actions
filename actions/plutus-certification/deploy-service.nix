@@ -50,7 +50,7 @@
               "traefik.http.routers.dapps-certification.entrypoints=https"
               "traefik.http.routers.dapps-certification.tls=true"
             ];
-            check = {
+            check.health = {
               type = "http";
               path = "/version";
               interval = "10s";
