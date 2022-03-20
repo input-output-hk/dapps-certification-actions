@@ -55,7 +55,7 @@
       };
     };
   in std.chain args [
-    { ${name}.namespace = "marlowe"; }
+    (name: prev: prev // { ${name} = prev.${name} // { namespace = "marlowe"; }; })
 
     actionLib.simpleJob
 
