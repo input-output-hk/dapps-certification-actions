@@ -61,25 +61,14 @@
 
     {
       resources.memory = 1024;
-      config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" "${nixpkgsFlake}#bind" ];
+      config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" ];
     }
-
-    (std.wrapScript "bash" (inner: ''
-      set -x
-      export CICERO_API_URL="http://cicero.service.consul:$(dig +short cicero.service.consul SRV | cut -d ' ' -f 3)"
-      ${lib.escapeShellArgs inner}
-    ''))
-
-    std.postFact
 
     (std.script "bash" ''
       set -x
-      echo ${lib.escapeShellArg (builtins.toJSON { ${name}.failed = true; })} > /local/cicero/post-fact/failure/fact
-      (
       echo ${lib.escapeShellArg (builtins.toJSON spec)} > job.json
       cat job.json
       nomad run job.json
-      ) 2>&1 | tee /local/cicero/post-fact/failure/artifact
     '')
   ];
 }
