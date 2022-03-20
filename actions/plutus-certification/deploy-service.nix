@@ -40,6 +40,23 @@
             command = [ "/bin/bash" "local/run.bash" ];
           };
 
+          service.dapps-certification = {
+            port = "http";
+            tags = [
+              "dapps-certification"
+              "ingress"
+              "traefik.enable=true"
+              "traefik.http.routers.dapps-certification.rule=Host(`testing.certification.dapps.iog.io`)"
+			        "traefik.http.routers.webhooks.entrypoints=http"
+            ];
+            check = {
+              type = "http";
+              path = "/version";
+			        interval = "10s";
+			        timeout = "2s";
+            };
+          };
+
           template = {
             data = ''
               set -eEuo pipefail
