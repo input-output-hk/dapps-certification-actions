@@ -60,8 +60,13 @@
     std.singleTask
 
     {
-      config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" ];
+      config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" "${nixpkgsFlake}#bind" ];
     }
+
+    (std.wrapScript "bash" (inner: ''
+      export CICERO_API_URL="http://cicero.service.consul:$(dig +short cicero.service.consul SRV | cut -d ' ' -f 3)"
+      ${lib.escapeShellArgs inner}
+    ''))
 
     std.postFact
 
