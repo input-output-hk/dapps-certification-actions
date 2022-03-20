@@ -43,7 +43,7 @@
             data = ''
               set -eEuo pipefail
 
-              {| service cicero |}
+              {| service "cicero" |}
               exec plutus-certification --port $NOMAD_PORT_http --bind $NOMAD_IP_http --cicero-url {| .Address |}:{| .Port |}
               '';
               # Workaround bug in std.script looking for template vars in the script body
