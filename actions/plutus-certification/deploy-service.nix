@@ -60,6 +60,7 @@
     std.singleTask
 
     {
+      resources.memory = 1024;
       config.packages = std.data-merge.append [ "${nixpkgsFlake}#nomad" "${nixpkgsFlake}#bind" ];
     }
 
