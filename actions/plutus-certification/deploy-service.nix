@@ -40,7 +40,7 @@
             command = [ "/bin/bash" "local/run.bash" ];
           };
 
-          service.dapps-certification = {
+          service = {
             port = "http";
             tags = [
               "dapps-certification"
