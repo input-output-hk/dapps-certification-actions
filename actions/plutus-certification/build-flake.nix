@@ -20,6 +20,8 @@
       resources.memory = 1024 * 2;
 
       config = {
+        console = "pipe";
+
         packages = std.data-merge.append [
           "${nixpkgsFlake}#gnutar"
           "${nixpkgsFlake}#gzip"
@@ -28,18 +30,18 @@
           "${nixpkgsFlake}#cacert"
         ];
 
-        template = {
-          data = ''
-            CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io/{{end}}"
-          '';
-          env = true;
-          destination = "secrets/cicero-api-url.env";
-        };
-
         # Make sure we have Nix sandboxing on!
         bind_read_only = [
           { "/nix" = "/nix"; }
         ];
+      };
+
+      template = {
+        data = ''
+          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io/{{end}}"
+        '';
+        env = true;
+        destination = "secrets/cicero-api-url.env";
       };
     }
 
