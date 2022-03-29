@@ -36,7 +36,7 @@
         ];
       };
 
-      template = [{
+      template = std.data-merge.append [{
         data = ''
           CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io/{{end}}"
         '';
