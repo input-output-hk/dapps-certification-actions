@@ -58,7 +58,7 @@
       curl ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
       cd flake
 
-      nix build path:. --no-link --json | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
+      nix build path:. --no-link --json --debug --print-build-logs | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
     '')
   ];
 }
