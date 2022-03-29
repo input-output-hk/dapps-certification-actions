@@ -43,6 +43,11 @@
         env = true;
         destination = "secrets/cicero-api-url.env";
       }];
+
+      env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+      env.NIX_CONFIG = ''
+        experimental-features = nix-command flakes
+      '';
     }
 
     std.postFact
@@ -53,10 +58,6 @@
       curl ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
       cd flake
 
-      export NIX_CONFIG='
-      experimental-features = nix-command flakes
-      '
-      export SSL_CERT_FILE="/etc/ssl/certs/ca-bundle.crt"
       nix build path:. --no-link --json | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
     '')
   ];

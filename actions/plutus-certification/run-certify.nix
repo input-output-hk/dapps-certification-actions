@@ -25,6 +25,7 @@
       config.packages = std.data-merge.append [
         certify-path.value."plutus-certification/build-flake".success
         "${nixpkgsFlake}#util-linux"
+        "${nixpkgsFlake}#cacert"
       ];
 
       config.console = "pipe";
@@ -36,6 +37,8 @@
         env = true;
         destination = "secrets/cicero-api-url.env";
       }];
+
+      env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     }
 
     std.postFact
