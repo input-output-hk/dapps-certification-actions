@@ -26,7 +26,7 @@
 
       template = std.data-merge.append [{
         data = ''
-          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io/{{end}}"
+          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io{{end}}"
         '';
         env = true;
         destination = "secrets/cicero-api-url.env";
@@ -39,8 +39,6 @@
 
     (std.script "bash" ''
       set -eEuo pipefail
-
-      curl -vL $CICERO_API_URL/api/fact/4821c283-bade-4b71-9484-530ffe9d16b1
 
       nix flake metadata --no-update-lock-file --json ${lib.escapeShellArg repo-ref.value.${name}.ref} > metadata.json
       metadataNix="$(nix eval --impure --expr '(builtins.fromJSON (builtins.readFile ./metadata.json)).locked')"
