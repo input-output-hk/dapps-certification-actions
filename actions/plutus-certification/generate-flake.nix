@@ -61,6 +61,17 @@
       echo ${lib.escapeShellArg (builtins.toJSON {
         ${name}.success = true;
       })} > /local/cicero/post-fact/success/fact
+
+      for ((i=0;i<8;i++))
+      do
+        if curl --fail "''${CICERO_API_URL}/api/run/''${NOMAD_JOB_ID}"
+        then
+          break
+        fi
+        let delay=2**i
+        echo "Cicero doesn't yet know about ''${NOMAD_JOB_ID}, sleeping for ''${delay} seconds" >&2
+        sleep "''${delay}"
+      done
     '')
   ];
 }
