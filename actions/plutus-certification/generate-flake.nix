@@ -40,8 +40,6 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      set -x
-
       nix flake metadata --no-update-lock-file --json ${lib.escapeShellArg repo-ref.value.${name}.ref} > metadata.json
       metadataNix="$(nix eval --impure --expr '(builtins.fromJSON (builtins.readFile ./metadata.json)).locked')"
 
