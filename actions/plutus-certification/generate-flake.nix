@@ -40,7 +40,7 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      curl $CICERO_API_URL/api/fact/4821c283-bade-4b71-9484-530ffe9d16b1
+      curl -vL $CICERO_API_URL/api/fact/4821c283-bade-4b71-9484-530ffe9d16b1
 
       nix flake metadata --no-update-lock-file --json ${lib.escapeShellArg repo-ref.value.${name}.ref} > metadata.json
       metadataNix="$(nix eval --impure --expr '(builtins.fromJSON (builtins.readFile ./metadata.json)).locked')"
