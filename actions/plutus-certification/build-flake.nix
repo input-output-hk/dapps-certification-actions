@@ -71,6 +71,9 @@
 
       cd flake
 
+      cat /local/post-build-hook
+      ls /bin
+
       nix build path:. --no-link --json --debug --print-build-logs | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
     '')
   ];
