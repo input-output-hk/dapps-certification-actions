@@ -71,10 +71,9 @@
 
       cd flake
 
-      cat /local/post-build-hook
-      ls /bin
-
-      nix build path:. --no-link --json --debug --print-build-logs | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
+      # Need to override the cicero-wide setting of post-build-hook since it's not available to the daemon
+      export NIX_CONFIG="experimental-features = nix-command flakes"
+      nix build path:. --no-link --json --print-build-logs | jq  '{ ${builtins.toJSON name}: { success: .[0].outputs.out } }' > /local/cicero/post-fact/success/fact
     '')
   ];
 }

@@ -61,9 +61,6 @@
       echo ${lib.escapeShellArg (builtins.toJSON {
         ${name}.success = true;
       })} > /local/cicero/post-fact/success/fact
-
-      cat /local/post-build-hook
-      ls /bin
     '')
   ];
 }
