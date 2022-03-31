@@ -24,7 +24,7 @@
           port.http = {};
         };
         task.dapps-certification = {
-          driver = "nix";
+          driver = "exec";
 
           resources = {
             memory = 2048;
@@ -32,12 +32,14 @@
           };
 
           config = {
-            packages = [
+            flake_deps = [
               "${nixpkgsFlake}#bash"
               "git+${cfg.clone_url}?ref=${cfg.ref}&rev=${cfg.sha}#plutus-certification:exe:plutus-certification"
             ];
 
-            command = [ "/bin/bash" "local/run.bash" ];
+            command = "/bin/bash";
+
+            args = [ "local/run.bash" ];
           };
 
           service = {
