@@ -66,7 +66,7 @@
 
               {| with service "cicero" |}
               {| with index . 0 |}
-              exec plutus-certification --port $NOMAD_PORT_http --bind $NOMAD_IP_http --cicero-url {| .Address |}:{| .Port |}
+              exec -a plutus-certification /bin/plutus-certification --port $NOMAD_PORT_http --bind $NOMAD_IP_http --cicero-url {| .Address |}:{| .Port |}
               {| end |}
               {| end |}
               '';
