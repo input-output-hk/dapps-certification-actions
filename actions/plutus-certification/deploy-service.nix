@@ -50,10 +50,11 @@
               "traefik.enable=true"
               "traefik.http.routers.dapps-certification.rule=Host(`testing.dapps.iog.io`)"
               "traefik.http.routers.dapps-certification.middlewares=dapps-auth@consulcatalog"
-              "traefik.http.middlewares.dapps-auth.basicauth.users=dapps:$apr1$isSYWKSA$Lc3sn8G61u24vC8KnKmva/"
+              "traefik.http.middlewares.dapps-auth.basicauth.users=dapps:$apr1$phYGuBo/$Q52QtZHGCNi1wWuJwZMIy0"
               "traefik.http.middlewares.dapps-auth.basicauth.realm=dapps-certification"
               "traefik.http.routers.dapps-certification.entrypoints=https"
               "traefik.http.routers.dapps-certification.tls=true"
+              "traefik.http.routers.dapps-certification.tls.certresolver=acme"
             ];
             check = {
               type = "http";
