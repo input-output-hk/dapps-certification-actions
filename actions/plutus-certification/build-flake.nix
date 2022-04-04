@@ -26,7 +26,7 @@
           "${nixpkgsFlake}#gnutar"
           "${nixpkgsFlake}#gzip"
           "${nixpkgsFlake}#bash"
-          "${nixpkgsFlake}#nix_2_5"
+          "${nixpkgsFlake}#nix"
           "${nixpkgsFlake}#cacert"
         ];
 
