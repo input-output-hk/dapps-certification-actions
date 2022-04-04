@@ -76,7 +76,7 @@
       # Wait for the path to be available in the cache
       for ((i=0;i<8;i++))
       do
-        if nix path-info --store spongix.service.consul:7745 "''${res}"
+        if nix path-info --store http://spongix.service.consul:7745 "''${res}"
         then
           break
         fi
