@@ -52,18 +52,6 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      # Work around delay in GET /api/fact/{id}/binary working
-      for ((i=0;i<8;i++))
-      do
-        if curl --fail --output /dev/null --no-progress-meter "''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary"
-        then
-          break
-        fi
-        let delay=2**i
-        echo "Cicero hasn't registered artifact for ${flake-tarball.id}, sleeping for ''${delay} seconds" >&2
-        sleep "''${delay}"
-      done
-
       curl --fail ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
 
       cd flake
