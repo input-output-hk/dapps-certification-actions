@@ -48,7 +48,7 @@
       {
         inputs = {
           repo = $metadataNix;
-          plutus-apps.url = "github:Quviq/plutus-apps/PR-certification-framework";
+          plutus-apps.url = "github:input-output-hk/plutus-apps/";
         };
 
         outputs = args: import ./outputs.nix args;

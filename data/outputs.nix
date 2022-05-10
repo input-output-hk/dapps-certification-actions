@@ -13,7 +13,7 @@
     cabalProjectLocal = lib.mkForce (origProject.args.cabalProjectLocal + ''
       source-repository-package
         type: git
-        location: https://github.com/Quviq/plutus-apps
+        location: https://github.com/input-output-hk/plutus-apps
         tag: ${plutus-apps.rev}
         --sha256: ${import (pkgs.stdenv.mkDerivation {
           name = "plutus-apps-sha.nix";
