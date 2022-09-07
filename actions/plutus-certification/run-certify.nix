@@ -51,7 +51,7 @@
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
         certify | \
-        jq '{ ${builtins.toJSON name}: { success: . } }' |
+        jq '{ ${builtins.toJSON name}: { success: . } }' | \
         cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url https://cicero.infra.aws.iohkdev.io
     '')
   ];
