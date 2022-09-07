@@ -27,7 +27,7 @@
         "${nixpkgsFlake}#util-linux"
         "${nixpkgsFlake}#cacert"
         "${nixpkgsFlake}#jq"
-        "github:input-output-hk/cicero-pipe?tag=v1.2.1"
+        "github:input-output-hk/cicero-pipe?ref=v1.2.1"
       ];
 
       config.console = "pipe";
