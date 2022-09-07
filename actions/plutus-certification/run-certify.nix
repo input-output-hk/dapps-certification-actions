@@ -13,7 +13,7 @@
   job = { certify-path }: std.chain args [
     (std.escapeNames [ ] [ ])
 
-    # postFact needs network access, but would be nice if we could
+    # cicero-pipe needs network access, but would be nice if we could
     # do this for the main task. Perhaps with some nspawn settings?
     # { ${name}.group.${name}.network.mode = "none"; }
 
@@ -26,28 +26,33 @@
         certify-path.value."plutus-certification/build-flake".success
         "${nixpkgsFlake}#util-linux"
         "${nixpkgsFlake}#cacert"
+        "${nixpkgsFlake}#jq"
+        "github:input-output-hk/cicero-pipe?tag=v1.2.0#cicero-pipe"
       ];
 
       config.console = "pipe";
 
       template = std.data-merge.append [{
         data = ''
-          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io{{end}}"
+          CICERO_PASS="{{with secret "kv/data/cicero/api"}}{{.Data.data.basic}}{{end}}"
         '';
         env = true;
-        destination = "secrets/cicero-api-url.env";
+        destination = "secrets/cicero-api-pass.env";
       }];
 
       env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    }
 
-    std.postFact
+      env.CICERO_USER = "cicero";
+    }
 
     (std.script "bash" ''
       set -eEuo pipefail
 
-      unshare --net --setuid=65534 --setgid=65534 certify 3> out.json
-      jq '{ ${builtins.toJSON name}: { success: . } }' < out.json > /local/cicero/post-fact/success/fact
+      env --ignore-environment \
+        unshare --net --setuid=65534 --setgid=65534 \
+        certify | \
+        jq '{ ${builtins.toJSON name}: { success: . } }' |
+        cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url https://cicero.infra.aws.iohkdev.io
     '')
   ];
 }
