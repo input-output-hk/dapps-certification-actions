@@ -48,6 +48,9 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
+      # outputs.failure is not being respected?
+      echo ${lib.escapeShellArg (builtins.toJSON { failure.${name}.failure = true; })} > /local/cicero/post-fact/failure/fact
+
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
         certify 3>&1 >&2 | \

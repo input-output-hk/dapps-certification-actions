@@ -40,6 +40,9 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
+      # outputs.failure is not being respected?
+      echo ${lib.escapeShellArg (builtins.toJSON { failure.${name}.failure = true; })} > /local/cicero/post-fact/failure/fact
+
       nix flake metadata --no-update-lock-file --json ${lib.escapeShellArg repo-ref.value.${name}.ref} > metadata.json
       metadataNix="$(nix eval --impure --expr '(builtins.fromJSON (builtins.readFile ./metadata.json)).locked')"
 

@@ -1,4 +1,4 @@
-{ name, std, nixpkgsFlake, ... }@args:
+{ name, std, lib, nixpkgsFlake, ... }@args:
 {
   inputs = {
     flake-tarball = ''
@@ -51,6 +51,9 @@
 
     (std.script "bash" ''
       set -eEuo pipefail
+
+      # outputs.failure is not being respected?
+      echo ${lib.escapeShellArg (builtins.toJSON { failure.${name}.failure = true; })} > /local/cicero/post-fact/failure/fact
 
       curl --fail ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
 
