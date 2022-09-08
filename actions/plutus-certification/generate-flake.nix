@@ -48,7 +48,7 @@
       {
         inputs = {
           repo = $metadataNix;
-          plutus-apps.url = "github:input-output-hk/plutus-apps/";
+          plutus-apps.url = "github:Ali-Hill/plutus-apps/escrow-fix";
         };
 
         outputs = args: import ./outputs.nix args;
