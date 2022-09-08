@@ -2,7 +2,7 @@
   inputs.start = ''
     "dapps-certification/ci": start: {
       clone_url: string
-      ref: string
+      ref: "refs/heads/master"
       sha: string
     }
   '';
