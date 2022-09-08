@@ -35,6 +35,7 @@
       template = std.data-merge.append [{
         data = ''
           CICERO_PASS="{{with secret "kv/data/cicero/api"}}{{.Data.data.basic}}{{end}}"
+          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io{{end}}"
         '';
         env = true;
         destination = "secrets/cicero-api-pass.env";
@@ -44,6 +45,8 @@
 
       env.CICERO_USER = "cicero";
     }
+
+    std.postFact
 
     (std.script "bash" ''
       set -eEuo pipefail
