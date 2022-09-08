@@ -31,7 +31,7 @@
     materialized = lib.mkForce null;
   });
 
-  ghc = project.ghcWithPackages (p: [ p.plutus-contract-certification p.certification ]);
+  ghc = project.ghcWithPackages (p: [ p.plutus-contract-certification p.certification p.aeson p.async ]);
 in {
   defaultPackage.x86_64-linux = pkgs.runCommand "certify" {} ''
     mkdir -p $out/bin
