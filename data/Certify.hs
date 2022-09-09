@@ -8,135 +8,70 @@ module Main where
 import "certification" Certification (certification)
 import "async" Control.Concurrent.Async
 import "base" Control.Concurrent.Chan
-import "base" Control.Concurrent.MVar
 import "base" Control.Exception
 import "aeson" Data.Aeson
-import "aeson" Data.Aeson.Encoding
+import "base" Data.Maybe
 import "bytestring" Data.ByteString.Lazy.Char8 qualified as BSL8
-import "text" Data.Text
+import "base" GHC.Stack
 import "base" GHC.IO.Handle.FD
 import "plutus-contract-certification" Plutus.Contract.Test.Certification.Run
 import "base" System.IO
+import "dapps-certification-interface" IOHK.Certification.Interface qualified as I
 
-renderTask :: CertificationTask -> Text
-renderTask UnitTestsTask = "unit-tests"
-renderTask StandardPropertyTask = "standard-property"
-renderTask DoubleSatisfactionTask = "double-satisfaction"
-renderTask NoLockedFundsTask = "no-locked-funds"
-renderTask NoLockedFundsLightTask = "no-locked-funds-light"
-renderTask CrashToleranceTask = "crash-tolerance"
-renderTask WhitelistTask = "white-list"
-renderTask DLTestsTask = "dl-tests"
-renderTask _ = "unknown"
+taskName :: CertificationTask -> I.CertificationTaskName
+taskName UnitTestsTask = I.UnitTestsTask
+taskName StandardPropertyTask = I.StandardPropertyTask
+taskName DoubleSatisfactionTask = I.DoubleSatisfactionTask
+taskName NoLockedFundsTask = I.NoLockedFundsTask
+taskName NoLockedFundsLightTask = I.NoLockedFundsLightTask
+taskName CrashToleranceTask = I.CrashToleranceTask
+taskName WhitelistTask = I.WhitelistTask
+taskName DLTestsTask = I.DLTestsTask
+taskName t = I.UnknownTask $ show t
 
-newtype CertificationTaskJSON = CertificationTaskJSON CertificationTask
+translateCertificationTask :: CertificationTask -> I.CertificationTask
+translateCertificationTask t = I.CertificationTask (taskName t) (fromEnum t)
 
-instance ToJSON CertificationTaskJSON where
-  toJSON (CertificationTaskJSON ct) = object
-    [ "name" .= renderTask ct
-    , "index" .= fromEnum ct
-    ]
-  toEncoding (CertificationTaskJSON ct) = pairs
-    ( "name" .= renderTask ct
-   <> "index" .= fromEnum ct
-    )
-
-data QCProgress = QCProgress
-  { qcSuccesses :: !Integer
-  , qcFailures :: !Integer
-  , qcDiscarded :: !Integer
-  }
-
-instance ToJSON QCProgress where
-  toJSON QCProgress {..} = object
-    [ "successes" .= qcSuccesses
-    , "failures" .= qcFailures
-    , "discarded" .= qcDiscarded
-    ]
-  toEncoding QCProgress {..} = pairs
-    ( "successes" .= qcSuccesses
-   <> "failures" .= qcFailures
-   <> "discarded" .= qcDiscarded
-    )
-
-data TaskResult = TaskResult
-  { qcStatus :: !QCProgress
-  , succeeded :: !Bool
-  }
-
-data CertificationTaskResult = CertificationTaskResult !(Maybe CertificationTask) !TaskResult
-
-instance ToJSON CertificationTaskResult where
-  toJSON (CertificationTaskResult ct (TaskResult {..})) = object
-    [ "task" .= (CertificationTaskJSON <$> ct)
-    , "qc-result" .= qcStatus
-    , "succeeded" .= succeeded
-    ]
-  toEncoding (CertificationTaskResult ct (TaskResult {..})) = pairs
-    ( "task" .= (CertificationTaskJSON  <$> ct)
-   <> "qc-result" .= qcStatus
-   <> "succeeded" .= succeeded
-    )
-
-data Progress = Progress
-  { currentTask :: !(Maybe CertificationTask)
-  , currentQc :: !QCProgress
-  , finishedTasks :: ![CertificationTaskResult]
-  }
-
-instance ToJSON Progress where
-  toJSON Progress {..} = object
-    [ "current-task" .= (CertificationTaskJSON <$> currentTask)
-    , "qc-progress" .= currentQc
-    , "finished-tasks" .= finishedTasks
-    ]
-  toEncoding Progress {..} = pairs
-    ( "current-task" .= (CertificationTaskJSON <$> currentTask)
-   <> "qc-progress" .= currentQc
-   <> "finished-tasks" .= finishedTasks
-    )
-
-postProgress :: Chan CertificationEvent -> Handle -> IO ()
+postProgress :: HasCallStack => Chan CertificationEvent -> Handle -> IO ()
 postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
-    go (0 :: Integer) initState
+    go 0 initState
   where
-    newQc = QCProgress 0 0 0
+    newQc = I.QCProgress 0 0 0
 
-    initState = Progress
+    initState = I.Progress
       { currentTask = Nothing
       , currentQc = newQc
       , finishedTasks = mempty
       }
 
+    updateState :: HasCallStack => CertificationEvent -> I.Progress -> I.Progress
     updateState (QuickCheckTestEvent Nothing) st = st
-      { currentQc = (currentQc st) { qcDiscarded = qcDiscarded (currentQc st) + 1 }
+      { I.currentQc = (I.currentQc st) { I.qcDiscarded = I.qcDiscarded (I.currentQc st) + 1 }
       }
     updateState (QuickCheckTestEvent (Just True)) st = st
-      { currentQc = (currentQc st) { qcSuccesses = qcSuccesses (currentQc st) + 1 }
+      { I.currentQc = (I.currentQc st) { I.qcSuccesses = I.qcSuccesses (I.currentQc st) + 1 }
       }
     updateState (QuickCheckTestEvent (Just False)) st = st
-      { currentQc = (currentQc st) { qcFailures = qcFailures (currentQc st) + 1 }
+      { I.currentQc = (I.currentQc st) { I.qcFailures = I.qcFailures (I.currentQc st) + 1 }
       }
     updateState (StartCertificationTask ct) st = st
-      { currentTask = Just ct
-      , currentQc = newQc
+      { I.currentTask = Just $ translateCertificationTask ct
+      , I.currentQc = newQc
       }
     updateState (FinishedTask res) st = st
-      { currentTask = Nothing
-      , currentQc = newQc
-      , finishedTasks = (CertificationTaskResult (currentTask st) (TaskResult (currentQc st) res)) : (finishedTasks st)
+      { I.currentTask = Nothing
+      , I.currentQc = newQc
+      , I.finishedTasks = (I.TaskResult (fromJust $ I.currentTask st) (I.currentQc st) res) : (I.finishedTasks st)
       }
 
+    go :: HasCallStack => Integer -> I.Progress -> IO ()
     go count st = do
       ev <- readChan eventChan
       let st' = updateState ev st
-      BSL8.hPutStrLn h . encodingToLazyByteString $ pairs
-        ( "status" .= st'
-       <> "status-count" .= count
-        )
+      BSL8.hPutStrLn h . encode $ I.Status st' count
       go (count + 1) st'
 
-main :: IO ()
+main :: HasCallStack => IO ()
 main = do
   eventChan <- newChan
 
@@ -148,5 +83,5 @@ main = do
         }
   (res, _) <- concurrently (certifyWithOptions certOpts certification) (postProgress eventChan h)
 
-  BSL8.hPutStrLn h . encodingToLazyByteString $ pairs ( "success" .= res )
+  BSL8.hPutStrLn h . encode . I.Success $ I.CertificationResult res
   hClose h

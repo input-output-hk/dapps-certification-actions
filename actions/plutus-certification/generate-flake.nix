@@ -48,7 +48,8 @@
       {
         inputs = {
           repo = $metadataNix;
-          plutus-apps.url = "github:input-output-hk/plutus-apps/";
+          plutus-apps.url = "github:input-output-hk/plutus-apps";
+          dapps-certification.url = "github:input-output-hk/dapps-certification";
         };
 
         outputs = args: import ./outputs.nix args;
