@@ -6,7 +6,7 @@
     '';
   };
 
-  outputs = { ... }: {
+  output = { ... }: {
     failure.${name}.failure = true;
   };
 
@@ -26,6 +26,7 @@
         certify-path.value."plutus-certification/build-flake".success
         "${nixpkgsFlake}#util-linux"
         "${nixpkgsFlake}#cacert"
+        "${nixpkgsFlake}#jq"
         "github:input-output-hk/cicero-pipe?ref=v1.2.1"
       ];
 
@@ -45,13 +46,8 @@
       env.CICERO_USER = "cicero";
     }
 
-    std.postFact
-
     (std.script "bash" ''
       set -eEuo pipefail
-
-      # outputs.failure is not being respected?
-      echo ${lib.escapeShellArg (builtins.toJSON { failure.${name}.failure = true; })} > /local/cicero/post-fact/failure/fact
 
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
