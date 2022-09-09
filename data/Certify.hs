@@ -34,7 +34,7 @@ translateCertificationTask t = I.CertificationTask (taskName t) (fromEnum t)
 
 postProgress :: HasCallStack => Chan CertificationEvent -> Handle -> IO ()
 postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
-    go 0 initState
+    go initState
   where
     newQc = I.QCProgress 0 0 0
 
@@ -42,34 +42,40 @@ postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
       { currentTask = Nothing
       , currentQc = newQc
       , finishedTasks = mempty
+      , progressIndex = 0
       }
 
     updateState :: HasCallStack => CertificationEvent -> I.Progress -> I.Progress
     updateState (QuickCheckTestEvent Nothing) st = st
       { I.currentQc = (I.currentQc st) { I.qcDiscarded = I.qcDiscarded (I.currentQc st) + 1 }
+      , I.progressIndex = (I.progressIndex st) + 1
       }
     updateState (QuickCheckTestEvent (Just True)) st = st
       { I.currentQc = (I.currentQc st) { I.qcSuccesses = I.qcSuccesses (I.currentQc st) + 1 }
+      , I.progressIndex = (I.progressIndex st) + 1
       }
     updateState (QuickCheckTestEvent (Just False)) st = st
       { I.currentQc = (I.currentQc st) { I.qcFailures = I.qcFailures (I.currentQc st) + 1 }
+      , I.progressIndex = (I.progressIndex st) + 1
       }
     updateState (StartCertificationTask ct) st = st
       { I.currentTask = Just $ translateCertificationTask ct
       , I.currentQc = newQc
+      , I.progressIndex = (I.progressIndex st) + 1
       }
     updateState (FinishedTask res) st = st
       { I.currentTask = Nothing
       , I.currentQc = newQc
       , I.finishedTasks = (I.TaskResult (fromJust $ I.currentTask st) (I.currentQc st) res) : (I.finishedTasks st)
+      , I.progressIndex = (I.progressIndex st) + 1
       }
 
-    go :: HasCallStack => Integer -> I.Progress -> IO ()
-    go count st = do
+    go :: HasCallStack => I.Progress -> IO ()
+    go st = do
       ev <- readChan eventChan
       let st' = updateState ev st
-      BSL8.hPutStrLn h . encode $ I.Status st' count
-      go (count + 1) st'
+      BSL8.hPutStrLn h . encode $ I.Status st'
+      go st'
 
 main :: HasCallStack => IO ()
 main = do
