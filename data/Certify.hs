@@ -8,6 +8,7 @@ module Main where
 import "certification" Certification (certification)
 import "async" Control.Concurrent.Async
 import "base" Control.Concurrent.Chan
+import "base" Control.Concurrent.MVar
 import "base" Control.Exception
 import "aeson" Data.Aeson
 import "base" Data.Maybe
@@ -33,10 +34,34 @@ translateCertificationTask :: CertificationTask -> I.CertificationTask
 translateCertificationTask t = I.CertificationTask (taskName t) (fromEnum t)
 
 postProgress :: HasCallStack => Chan CertificationEvent -> Handle -> IO ()
-postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
-    go initState
+postProgress eventChan h = do
+    latestEvent <- newEmptyMVar
+    concurrently_ (feed latestEvent) (post' latestEvent initState)
   where
-    newQc = I.QCProgress 0 0 0
+    -- Only works if single producer!
+    forcePutMVar v x = do
+      _ <- tryTakeMVar v
+      putMVar v x
+
+    feed latestEvent = handle (\BlockedIndefinitelyOnMVar -> forcePutMVar latestEvent Nothing) $
+      go latestEvent
+
+    go latestEvent = do
+      ev <- readChan eventChan
+      forcePutMVar latestEvent $ Just ev
+      go latestEvent
+
+    -- Needed due to https://gitlab.haskell.org/ghc/ghc/-/issues/22164
+    post' :: HasCallStack => MVar (Maybe CertificationEvent) -> I.Progress -> IO ()
+    post' latestEvent st = handle (\BlockedIndefinitelyOnMVar -> pure ()) $ post latestEvent st
+
+    post :: HasCallStack => MVar (Maybe CertificationEvent) -> I.Progress -> IO ()
+    post latestEvent st = takeMVar latestEvent >>= \case
+      Nothing -> pure ()
+      Just ev -> do
+        let st' = updateState ev st
+        BSL8.hPutStrLn h . encode $ I.Status st'
+        post latestEvent st'
 
     initState = I.Progress
       { currentTask = Nothing
@@ -44,6 +69,8 @@ postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
       , finishedTasks = mempty
       , progressIndex = 0
       }
+
+    newQc = I.QCProgress 0 0 0
 
     updateState :: HasCallStack => CertificationEvent -> I.Progress -> I.Progress
     updateState (QuickCheckTestEvent Nothing) st = st
@@ -69,13 +96,6 @@ postProgress eventChan h = handle (\BlockedIndefinitelyOnMVar -> pure ()) $
       , I.finishedTasks = (I.TaskResult (fromJust $ I.currentTask st) (I.currentQc st) res) : (I.finishedTasks st)
       , I.progressIndex = (I.progressIndex st) + 1
       }
-
-    go :: HasCallStack => I.Progress -> IO ()
-    go st = do
-      ev <- readChan eventChan
-      let st' = updateState ev st
-      BSL8.hPutStrLn h . encode $ I.Status st'
-      go st'
 
 main :: HasCallStack => IO ()
 main = do
