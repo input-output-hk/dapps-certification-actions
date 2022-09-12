@@ -36,29 +36,24 @@ translateCertificationTask t = I.CertificationTask (taskName t) (fromEnum t)
 postProgress :: HasCallStack => Chan CertificationEvent -> Handle -> IO ()
 postProgress eventChan h = do
     latestEvent <- newEmptyMVar
-    concurrently_ (feed latestEvent) (post' latestEvent initState)
+    concurrently_ (feed latestEvent) (post latestEvent initState)
   where
     -- Only works if single producer!
     forcePutMVar v x = do
       _ <- tryTakeMVar v
       putMVar v x
 
-    feed latestEvent = handle (\BlockedIndefinitelyOnMVar -> forcePutMVar latestEvent Nothing) $
-      go latestEvent
-
-    go latestEvent = do
+    feed latestEvent = do
       ev <- readChan eventChan
-      forcePutMVar latestEvent $ Just ev
-      go latestEvent
+      forcePutMVar latestEvent ev
+      case ev of
+        CertificationDone -> pure ()
+        _ -> feed latestEvent
 
-    -- Needed due to https://gitlab.haskell.org/ghc/ghc/-/issues/22164
-    post' :: HasCallStack => MVar (Maybe CertificationEvent) -> I.Progress -> IO ()
-    post' latestEvent st = handle (\BlockedIndefinitelyOnMVar -> pure ()) $ post latestEvent st
-
-    post :: HasCallStack => MVar (Maybe CertificationEvent) -> I.Progress -> IO ()
+    post :: HasCallStack => MVar CertificationEvent -> I.Progress -> IO ()
     post latestEvent st = takeMVar latestEvent >>= \case
-      Nothing -> pure ()
-      Just ev -> do
+      CertificationDone -> pure ()
+      ev -> do
         let st' = updateState ev st
         BSL8.hPutStrLn h . encode $ I.Status st'
         post latestEvent st'
@@ -96,6 +91,7 @@ postProgress eventChan h = do
       , I.finishedTasks = (I.TaskResult (fromJust $ I.currentTask st) (I.currentQc st) res) : (I.finishedTasks st)
       , I.progressIndex = (I.progressIndex st) + 1
       }
+    updateState CertificationDone _ = error "unreachable"
 
 main :: HasCallStack => IO ()
 main = do
