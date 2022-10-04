@@ -92,6 +92,7 @@ postProgress eventChan h = do
       , I.progressIndex = (I.progressIndex st) + 1
       }
     updateState CertificationDone _ = error "unreachable"
+    updateState _ st = st
 
 main :: HasCallStack => IO ()
 main = do
