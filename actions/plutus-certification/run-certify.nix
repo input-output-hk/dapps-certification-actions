@@ -32,7 +32,18 @@
 
       config.console = "pipe";
 
+      template = std.data-merge.append [{
+        data = ''
+          CICERO_PASS="{{with secret "kv/data/cicero/api"}}{{.Data.data.basic}}{{end}}"
+          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io{{end}}"
+        '';
+        env = true;
+        destination = "secrets/cicero-api-pass.env";
+      }];
+
       env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+
+      env.CICERO_USER = "cicero";
     }
 
     (std.script "bash" ''
@@ -42,7 +53,7 @@
         unshare --net --setuid=65534 --setgid=65534 \
         certify 3>&1 >&2 | \
         jq '{ ${builtins.toJSON name}: . }' | \
-        cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url "$CICERO_API_URL"
+        cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url https://cicero.infra.aws.iohkdev.io
     '')
   ];
 }
