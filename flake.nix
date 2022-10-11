@@ -10,8 +10,8 @@
   in {
     ciceroActions = cicero.lib.callActionsWithExtraArgs rec {
       inherit std lib;
-      getDataFile = fn: ./data + "/${fn}";
       nixpkgsFlake = "github:NixOS/nixpkgs/${nixpkgs.rev}"; # TODO Get the full URL from Nix somehow
+      helperFlakeInput = exe: "github:input-output-hk/dapps-certification#dapps-certification-helpers:exe:${exe}";
     } ./actions;
   };
 }

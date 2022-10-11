@@ -1,4 +1,4 @@
-{ name, std, lib, nixpkgsFlake, ... }@args:
+{ name, std, lib, nixpkgsFlake, helperFlakeInput, ... }@args:
 {
   inputs = {
     certify-path = ''
@@ -28,6 +28,7 @@
         "${nixpkgsFlake}#cacert"
         "${nixpkgsFlake}#jq"
         "github:input-output-hk/cicero-pipe?ref=v1.2.1"
+        (helperFlakeInput "run-certify")
       ];
 
       config.console = "pipe";
@@ -51,8 +52,7 @@
 
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
-        certify 3>&1 >&2 | \
-        jq '{ ${builtins.toJSON name}: . }' | \
+        run-certify ${certify-path.value."plutus-certification/build-flake".success}/bin/certify | \
         cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url https://cicero.infra.aws.iohkdev.io
     '')
   ];

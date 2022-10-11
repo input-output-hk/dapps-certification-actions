@@ -1,4 +1,4 @@
-{ name, std, lib, getDataFile, nixpkgsFlake, ... }@args:
+{ name, std, lib, helperFlakeInput, nixpkgsFlake, ... }@args:
 {
   inputs = {
     repo-ref = ''
@@ -20,6 +20,7 @@
         "${nixpkgsFlake}#gnutar"
         "${nixpkgsFlake}#gzip"
         "${nixpkgsFlake}#bash"
+        (helperFlakeInput "generate-flake")
       ];
 
       config.console = "pipe";
@@ -40,23 +41,7 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      nix flake metadata --no-update-lock-file --json ${lib.escapeShellArg repo-ref.value.${name}.ref} > metadata.json
-      metadataNix="$(nix eval --impure --expr '(builtins.fromJSON (builtins.readFile ./metadata.json)).locked')"
-
-      mkdir flake
-      cat > flake/flake.nix <<EOF
-      {
-        inputs = {
-          repo = $metadataNix;
-          plutus-apps.url = "github:input-output-hk/plutus-apps";
-          dapps-certification.url = "github:input-output-hk/dapps-certification";
-        };
-
-        outputs = args: import ./outputs.nix args;
-      }
-      EOF
-      echo ${lib.escapeShellArg (builtins.readFile (getDataFile "outputs.nix"))} > flake/outputs.nix
-      echo ${lib.escapeShellArg (builtins.readFile (getDataFile "Certify.hs"))} > flake/Certify.hs
+      generate-flake ${lib.escapeShellArg repo-ref.value.${name}.ref} flake
 
       tar czf /local/cicero/post-fact/success/artifact flake
       echo ${lib.escapeShellArg (builtins.toJSON {

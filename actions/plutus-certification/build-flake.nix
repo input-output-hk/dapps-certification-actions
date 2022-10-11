@@ -1,4 +1,4 @@
-{ name, std, lib, nixpkgsFlake, ... }@args:
+{ name, std, lib, nixpkgsFlake, helperFlakeInput, ... }@args:
 {
   inputs = {
     flake-tarball = ''
@@ -28,6 +28,7 @@
           "${nixpkgsFlake}#bash"
           "${nixpkgsFlake}#nix"
           "${nixpkgsFlake}#cacert"
+          (helperFlakeInput "build-flake")
         ];
 
         # Make sure we have Nix sandboxing on!
@@ -54,11 +55,9 @@
 
       curl --fail ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
 
-      cd flake
-
-      # Need to override the cicero-wide setting of post-build-hook since it's not available to the daemon
       export NIX_CONFIG="experimental-features = nix-command flakes"
-      res=$(nix build path:. --no-link --json --print-build-logs | jq '.[0].outputs.out')
+      res=$(build-flake flake)
+
       echo "''${res}" | jq  '{ ${builtins.toJSON name}: { success: . } }' > /local/cicero/post-fact/success/fact
 
       # Wait for the path to be available in the cache
