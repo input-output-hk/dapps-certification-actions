@@ -27,24 +27,13 @@
         "${nixpkgsFlake}#util-linux"
         "${nixpkgsFlake}#cacert"
         "${nixpkgsFlake}#jq"
-        "github:input-output-hk/cicero-pipe?ref=v1.2.1"
+        "github:input-output-hk/cicero-pipe?ref=v2.0.0"
         (helperFlakeInput "run-certify")
       ];
 
       config.console = "pipe";
 
-      template = std.data-merge.append [{
-        data = ''
-          CICERO_PASS="{{with secret "kv/data/cicero/api"}}{{.Data.data.basic}}{{end}}"
-          CICERO_API_URL="{{with secret "kv/data/cicero/api"}}https://cicero:{{.Data.data.basic}}@cicero.infra.aws.iohkdev.io{{end}}"
-        '';
-        env = true;
-        destination = "secrets/cicero-api-pass.env";
-      }];
-
       env.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-
-      env.CICERO_USER = "cicero";
     }
 
     (std.script "bash" ''
@@ -53,7 +42,7 @@
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
         run-certify ${certify-path.value."plutus-certification/build-flake".success}/bin/certify | \
-        cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url https://cicero.infra.aws.iohkdev.io
+        cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url ''${CICERO_API_URL} --netrc-file /secrets/netrc
     '')
   ];
 }
