@@ -41,7 +41,7 @@
 
       env --ignore-environment \
         unshare --net --setuid=65534 --setgid=65534 \
-        run-certify ${certify-path.value."plutus-certification/build-flake".success}/bin/certify | \
+        run-certify ${certify-path.value."plutus-certification/build-flake".success} | \
         cicero-pipe --disable-artifacts --run-id "$NOMAD_JOB_ID" --cicero-url ''${CICERO_API_URL} --netrc-file /secrets/netrc
     '')
   ];
