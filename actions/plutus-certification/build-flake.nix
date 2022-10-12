@@ -50,7 +50,7 @@
       export NIX_CONFIG="experimental-features = nix-command flakes"
       res=$(build-flake flake)
 
-      echo "''${res}" | jq  '{ ${builtins.toJSON name}: { success: . } }' > /local/cicero/post-fact/success/fact
+      echo "\"''${res}\"" | jq  '{ ${builtins.toJSON name}: { success: . } }' > /local/cicero/post-fact/success/fact
 
       if nix show-config --json | jq -r .substituters.value[] | grep --quiet spongix.service.consul
       then
