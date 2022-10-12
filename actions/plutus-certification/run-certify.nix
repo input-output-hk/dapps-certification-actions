@@ -27,7 +27,7 @@
         "${nixpkgsFlake}#util-linux"
         "${nixpkgsFlake}#cacert"
         "${nixpkgsFlake}#jq"
-        "github:input-output-hk/cicero-pipe?ref=v2.0.0"
+        "github:input-output-hk/cicero-pipe?ref=v2.0.1"
         (helperFlakeInput "run-certify")
       ];
 
