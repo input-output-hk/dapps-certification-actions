@@ -35,13 +35,7 @@
 
       echo "$CICERO_API_URL"
 
-      if curl "$CICERO_API_URL"/api/run/"$NOMAD_JOB_ID" --fail
-      then
-        echo "what" >&2
-        exit 1
-      else
-        curl "$CICERO_API_URL"/api/run/"$NOMAD_JOB_ID" --fail --netrc-file /secrets/netrc
-      fi
+      curl "$CICERO_API_URL"/api/run/"$NOMAD_JOB_ID" --fail --netrc-file /secrets/netrc
 
       generate-flake ${lib.escapeShellArg repo-ref.value.${name}.ref} flake
 
