@@ -20,6 +20,7 @@
         "${nixpkgsFlake}#gnutar"
         "${nixpkgsFlake}#gzip"
         "${nixpkgsFlake}#bash"
+        "${nixpkgsFlake}#gnugrep"
         (helperFlakeInput "generate-flake")
       ];
 
@@ -33,7 +34,7 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      echo "$CICERO_API_URL"
+      echo "$CICERO_API_URL" >&2
 
       grep -F -A 1 cicero.infra.aws.iohkdev.io /secrets/netrc
 
