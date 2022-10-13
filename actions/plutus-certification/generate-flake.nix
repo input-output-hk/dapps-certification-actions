@@ -35,6 +35,8 @@
 
       echo "$CICERO_API_URL"
 
+      grep -F -A 1 cicero.infra.aws.iohkdev.io /secrets/netrc
+
       curl "$CICERO_API_URL"/api/run/"$NOMAD_JOB_ID" --fail --netrc-file /secrets/netrc
 
       generate-flake ${lib.escapeShellArg repo-ref.value.${name}.ref} flake
