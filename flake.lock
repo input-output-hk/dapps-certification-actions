@@ -240,15 +240,16 @@
         "utils": "utils_8"
       },
       "locked": {
-        "lastModified": 1650383369,
-        "narHash": "sha256-LELO6qHFvcs1NUt6mugNaoAoBPsSU3GAvhmZga2hhYE=",
-        "owner": "input-output-hk",
+        "lastModified": 1665589297,
+        "narHash": "sha256-fjd+GhnQsKPE+DbGGtHZvUsCuQqwvR43rvXn4nxRiio=",
+        "owner": "shlevy",
         "repo": "cicero",
-        "rev": "f9981e6018b269e392d5081e50b7e3933f0e0aeb",
+        "rev": "4edb322840efee21dc37247ed52bb91c6d5f65b8",
         "type": "github"
       },
       "original": {
-        "owner": "input-output-hk",
+        "owner": "shlevy",
+        "ref": "api-url",
         "repo": "cicero",
         "type": "github"
       }
@@ -1222,17 +1223,17 @@
         "nixpkgs-regression": "nixpkgs-regression_3"
       },
       "locked": {
-        "lastModified": 1645437800,
-        "narHash": "sha256-MAMIKi3sIQ0b3jzYyOb5VY29GRgv7JXl1VXoUM9xUZw=",
+        "lastModified": 1650397666,
+        "narHash": "sha256-gWYNlEyleqkPfxtGXeq6ggjzJwcXJVdieJxA1Obly9s=",
         "owner": "NixOS",
         "repo": "nix",
-        "rev": "f22b9e72f51f97f8f2d334748d3e97123940a146",
+        "rev": "69c6fb12eea414382f0b945c0d6c574c43c7c9a3",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
+        "ref": "2.8.0",
         "repo": "nix",
-        "rev": "f22b9e72f51f97f8f2d334748d3e97123940a146",
         "type": "github"
       }
     },
