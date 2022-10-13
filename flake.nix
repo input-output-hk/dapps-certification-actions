@@ -1,7 +1,7 @@
 {
   description = "Cicero actions driving plutus-certification";
 
-  inputs.cicero.url = "github:input-output-hk/cicero";
+  inputs.cicero.url = "github:input-output-hk/cicero/v1-maintenance";
 
   outputs = { self, nixpkgs, cicero }: let
     inherit (cicero.lib) std;

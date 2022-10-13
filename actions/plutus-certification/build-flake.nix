@@ -45,7 +45,7 @@
     (std.script "bash" ''
       set -eEuo pipefail
 
-      curl --netrc-optional --netrc-file /secrets/netrc --fail ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
+      curl --netrc-optional --netrc-file /secrets/netrc-cicero --fail ''${CICERO_API_URL}/api/fact/${flake-tarball.id}/binary | tar xz
 
       export NIX_CONFIG="experimental-features = nix-command flakes"
       res=$(build-flake flake)
